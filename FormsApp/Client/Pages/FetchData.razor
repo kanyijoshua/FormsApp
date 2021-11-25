@@ -1,0 +1,85 @@
+﻿@page "/fetchdata"
+@using FormsApp.Shared
+@inject HttpClient Http
+@* @inject IHttpClientFactory ClientFactory *@
+@* @using Microsoft.AspNetCore.Components.WebAssembly.Authentication *@
+@* @using Microsoft.AspNetCore.Components.Authorization *@
+@* @using System.Net.Http.Headers *@
+@* @inject IAccessTokenProvider TokenProvider *@
+@inject NavigationManager nav
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize]
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@{
+    var authenticationState = AuthenticationStateProvider.GetAuthenticationStateAsync().Result;
+    foreach (var claim in authenticationState.User.Claims)
+    {
+        <p>@claim.Value ==> @claim.Type</p>
+    }
+}
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        //try
+        //{
+        //    var http = new HttpClient();
+        //    http.BaseAddress = new Uri(nav.BaseUri);
+        //    //var tokenResult = await TokenProvider.RequestAccessToken(
+        //    //new AccessTokenRequestOptions
+        //    //{
+        //    //    ReturnUrl = nav.BaseUri
+        //    //});
+        //    var client = ClientFactory.CreateClient("FormsAppServerAPI");
+
+        //    forecasts = await client.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+
+        ////if (tokenResult.TryGetToken(out var token))
+        ////{
+        ////    http.DefaultRequestHeaders.Add("Authorization", 
+        ////        $"Bearer {token.Value}");
+        ////    forecasts = await http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast"/*, new AuthenticationHeaderValue("Bearer", token.Value)*/);
+        ////}
+        //}
+        //catch (AccessTokenNotAvailableException exception)
+        //{
+        //    exception.Redirect();
+        //}
+    }
+}
